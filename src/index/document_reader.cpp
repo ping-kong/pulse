@@ -1,8 +1,8 @@
 #include "document_reader.h"
 #include "document_protocol.h"
 #include "document_admission.h"
+#include "../common/data_root.h"
 #include "../common/runtime_log.h"
-#include <shlobj.h>
 #include <psapi.h>
 #include <algorithm>
 #include <array>
@@ -54,16 +54,14 @@ bool AdmissionDirectory(std::wstring& directory, DWORD& error) {
         directory = isolated;
         return true;
     }
-    PWSTR local = nullptr;
-    const auto result = SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, nullptr, &local);
-    if (FAILED(result)) { error = ERROR_PATH_NOT_FOUND; return false; }
-    resolved = local;
-    CoTaskMemFree(local);
-    for (const auto* part : {L"\\Pulse", L"\\document-slots-v1"}) {
-        resolved += part;
-        if (!CreateDirectoryW(resolved.c_str(), nullptr) && GetLastError() != ERROR_ALREADY_EXISTS) {
-            error = GetLastError(); return false;
-        }
+    resolved = storage::DataRootPath();
+    if (resolved.empty()) { error = ERROR_PATH_NOT_FOUND; return false; }
+    if (!CreateDirectoryW(resolved.c_str(), nullptr) && GetLastError() != ERROR_ALREADY_EXISTS) {
+        error = GetLastError(); return false;
+    }
+    resolved += L"\\document-slots-v1";
+    if (!CreateDirectoryW(resolved.c_str(), nullptr) && GetLastError() != ERROR_ALREADY_EXISTS) {
+        error = GetLastError(); return false;
     }
     directory = std::move(resolved);
     return true;

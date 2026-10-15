@@ -1,7 +1,7 @@
 // fs_net_cache.cpp — Disk snapshots for UNC folders and a timed connectivity probe.
 #include "fs_net_cache.h"
+#include "../common/data_root.h"
 #include "../common/localization.h"
-#include <shlobj.h>
 #include <chrono>
 #include <fstream>
 #include <string>
@@ -67,9 +67,8 @@ std::wstring CacheDir() {
 #if defined(PULSE_TEST_NET_CACHE)
     return NetCacheDirectoryForTest();
 #endif
-    wchar_t path[MAX_PATH] = {};
-    if (FAILED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, path))) return L"";
-    std::wstring dir = std::wstring(path) + L"\\Pulse";
+    std::wstring dir = storage::DataRootPath();
+    if (dir.empty()) return L"";
     CreateDirectoryW(dir.c_str(), nullptr);
     dir += L"\\netcache";
     CreateDirectoryW(dir.c_str(), nullptr);

@@ -26,16 +26,26 @@ New-Item -ItemType Directory -Path (Join-Path $payload 'licenses/ib-pinyin') -Fo
 Copy-Item -LiteralPath (Join-Path $repo 'third_party/ib-pinyin-cpp/LICENSE.txt') -Destination (Join-Path $payload 'licenses/ib-pinyin')
 New-Item -ItemType Directory -Path (Join-Path $payload 'licenses/md4c') -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $repo 'third_party/md4c/LICENSE.md') -Destination (Join-Path $payload 'licenses/md4c')
+# The portable copy keeps its data next to the program by default; the ini is
+# the documented switch (docs/data-root.md) for moving it elsewhere.
+@"
+# Pulse data location for this copy (see docs/data-root.md).
+#   data_dir=.                 index, settings, packs and logs stay in this folder
+#   data_dir=D:\PulseData      any absolute path
+#   data_dir=..\PulseData      relative to this folder
+# Delete this file to fall back to %LOCALAPPDATA%\Pulse.
+data_dir=.
+"@ | Set-Content -LiteralPath (Join-Path $payload 'pulse.ini') -Encoding utf8
 @"
 Pulse $version — Windows 10 / 11 x64 免安装版
 
 解压整个文件夹后运行 pulse.exe。请保留同目录的辅助程序、DLL 和 licenses 文件夹。
-此版本无需安装，但配置、缓存和日志仍保存在当前用户的应用数据目录，并非全部数据随程序目录携带。
+索引、配置、预览增强包和日志默认保存在本目录（由 pulse.ini 的 data_dir 决定），整个文件夹可整体拷贝迁移；修改 data_dir 可改为其他目录。
 解压不会注册 PulseIndex 系统服务。需要全盘后台索引服务时，请使用安装版。
 程序内下载安装更新会启动安装包；如需继续免安装使用，请下载新版 portable ZIP 并解压到新目录。
 
 Extract the complete folder and run pulse.exe. Keep all helper programs, DLLs and licenses together.
-Settings, caches and logs remain in the current user's application-data directory.
+Index, settings, preview packs and logs stay in this folder by default (pulse.ini, data_dir); edit data_dir to move them elsewhere, or delete the file to use %LOCALAPPDATA%\Pulse.
 Extraction does not register the PulseIndex service. Use the installer for the system indexing service.
 In-app updates launch an installer; download a new portable ZIP to continue using the unpacked edition.
 "@ | Set-Content -LiteralPath (Join-Path $payload 'README.txt') -Encoding utf8

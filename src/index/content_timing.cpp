@@ -1,4 +1,5 @@
 #include "content_timing.h"
+#include "../common/data_root.h"
 #include <algorithm>
 #include <array>
 #include <cstdio>
@@ -136,9 +137,9 @@ void PruneForeignLogs(const std::filesystem::path& directory) noexcept {
 std::wstring LogPath() {
     auto directory = Environment(L"PULSE_CONTENT_TIMING_DIR");
     if (directory.empty()) {
-        directory = Environment(L"LOCALAPPDATA");
-        if (directory.empty()) return {};
-        directory += L"\\Pulse\\logs";
+        const std::wstring root = storage::DataRootPath();
+        if (root.empty()) return {};
+        directory = root + L"\\logs";
     }
     std::error_code error;
     std::filesystem::create_directories(directory, error);

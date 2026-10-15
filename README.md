@@ -18,7 +18,7 @@
 | Windows 8.1 兼容版（64位） | Windows 8.1 | `PulseSetup-版本-win81.exe` |
 | 免安装版（64位） | Windows 10 / Windows 11 | `Pulse-版本-portable-win-x64.zip` |
 
-运行安装包，按向导完成安装。安装时可以启用 PulseIndex 服务，用于全盘索引搜索。免安装版解压即可运行，配置仍保存在用户应用数据目录；全盘索引服务需要通过安装版部署。
+运行安装包，按向导完成安装。安装时可以启用 PulseIndex 服务，用于全盘索引搜索。免安装版解压即可运行，数据默认存放在程序同目录（由目录下的 `pulse.ini` 决定，可改到其他盘）；全盘索引服务需要通过安装版部署。数据目录规则见[文档](docs/data-root.md)。
 
 界面提供简体中文、繁體中文和 English，默认跟随 Windows，也可以在「设置 → 显示语言」中切换。
 
@@ -112,7 +112,7 @@ pwsh ./scripts/build_release_ci.ps1 -Channel win81 -BuildDir build-ci-win81
 
 技术栈为 C++20、Win32、Direct2D 和 DirectComposition。文件系统、索引、预览与 Shell 任务分别放在对应模块，避免阻塞界面。
 
-更多说明：[自动更新与发布](docs/automatic-updates.md) · [Windows 兼容性](docs/windows-compatibility.md) · [索引存储与迁移](docs/index-migration.md)
+更多说明：[自动更新与发布](docs/automatic-updates.md) · [Windows 兼容性](docs/windows-compatibility.md) · [索引存储与迁移](docs/index-migration.md) · [数据目录](docs/data-root.md)
 
 ## 许可证
 

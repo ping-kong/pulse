@@ -7,6 +7,7 @@
 #include "app_commands.h"
 #include "single_instance_coordinator.h"
 #include "app_internal.h"
+#include "../common/data_root.h"
 #include "../common/localization.h"
 
 #include <shlobj.h>
@@ -54,12 +55,8 @@ std::wstring ModulePath() {
 }
 
 std::wstring IconDirectory() {
-    PWSTR base = nullptr;
-    std::wstring dir;
-    if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &base)) && base)
-        dir = std::wstring(base) + L"\\Pulse\\tagicons";
-    CoTaskMemFree(base);
-    return dir;
+    const std::wstring root = storage::DataRootPath();
+    return root.empty() ? std::wstring() : root + L"\\tagicons";
 }
 
 size_t Signature(const AppState& s) {

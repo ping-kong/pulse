@@ -11,6 +11,7 @@
 #include "../fs/fs_watch.h"
 #include "../../third_party/sqlite/sqlite3.h"
 #include "../common/current_user_security.h"
+#include "../common/data_root.h"
 #include <algorithm>
 #include <chrono>
 #include <condition_variable>
@@ -75,15 +76,14 @@ private:
     bool stopping_ = false;
 };
 bool InternalContentPath(const std::wstring& path) {
-    std::wstring profile(256, L'\0');
-    DWORD n = GetEnvironmentVariableW(L"LOCALAPPDATA", profile.data(), static_cast<DWORD>(profile.size()));
-    if (n >= profile.size()) {
-        profile.resize(n);
-        n = GetEnvironmentVariableW(L"LOCALAPPDATA", profile.data(), static_cast<DWORD>(profile.size()));
-    }
-    if (!n || n >= profile.size()) return false;
-    profile.resize(n);
-    return ContentPathUnder(ContentScopeKey(path), ContentScopeKey(profile + L"\\Pulse"));
+    const std::wstring root = storage::DataRootPath();
+    if (root.empty()) return false;
+    if (ContentPathUnder(ContentScopeKey(path), ContentScopeKey(root))) return true;
+    // A relocated root leaves the legacy tree behind until the user removes
+    // it; excluding both keeps Pulse from indexing its own old data too.
+    const std::wstring legacy = storage::LegacyDataRootPath();
+    return !legacy.empty() && legacy != root &&
+        ContentPathUnder(ContentScopeKey(path), ContentScopeKey(legacy));
 }
 bool ExcludedContentPath(const ContentIndexConfig& config, const std::wstring& path) {
     return InternalContentPath(path) || ContentPathExcluded(config, path);

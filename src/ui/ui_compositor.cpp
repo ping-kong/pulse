@@ -1,5 +1,6 @@
 // ui_compositor.cpp
 #include "ui_compositor.h"
+#include "../common/data_root.h"
 #include "../common/windows_compat.h"
 #include "../common/localization.h"
 #include "lumatext_renderer.h"
@@ -51,10 +52,11 @@ bool Compositor::CheckGraphics(HRESULT hr, const wchar_t* stage) {
     wchar_t message[256]{};
     swprintf_s(message, L"%s failed (HRESULT 0x%08X)", stage, static_cast<unsigned>(hr));
     initialization_error_ = message;
-    PWSTR local = nullptr;
-    if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &local))) {
-        const std::wstring directory = std::wstring(local) + L"\\Pulse";
-        CoTaskMemFree(local);
+    // The data root: an installed copy cannot write to its exe folder under
+    // Program Files, a portable copy keeps the log next to the program.
+    const std::wstring root = storage::DataRootPath();
+    if (!root.empty()) {
+        const std::wstring directory = root;
         CreateDirectoryW(directory.c_str(), nullptr);
         FILE* log = nullptr;
         if (_wfopen_s(&log, (directory + L"\\pulse_graphics.log").c_str(), L"a, ccs=UTF-8") == 0) {

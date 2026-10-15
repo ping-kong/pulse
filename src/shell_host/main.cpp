@@ -14,6 +14,7 @@
 #include "ctx_handlers.h"
 #include "packaged_ctx_handlers.h"
 #include "../common/current_user_security.h"
+#include "../common/data_root.h"
 #include "../common/path_utils.h"
 #include "../common/recycle_index.h"
 #include "../common/crash_reporter.h"
@@ -73,12 +74,13 @@ struct HostState {
 } g;
 
 // Crash-only diagnostics (plan §11: crashes are a normal design case).
-// Log under %LOCALAPPDATA%\Pulse: an installed copy lives in Program Files,
-// where the exe directory is not writable for a non-admin user.
+// Log under the Pulse data root: an installed copy lives in Program Files,
+// where the exe directory is not writable for a non-admin user, while a
+// portable copy keeps the log next to the program.
 void HostLog(const wchar_t* msg) {
-    wchar_t dir[MAX_PATH]{};
-    if (FAILED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, dir))) return;
-    std::wstring path = std::wstring(dir) + L"\\Pulse";
+    const std::wstring root = pulse::storage::DataRootPath();
+    if (root.empty()) return;
+    std::wstring path = root;
     CreateDirectoryW(path.c_str(), nullptr);
     path += L"\\pulse_shell_host.log";
     if (HANDLE f = CreateFileW(path.c_str(), FILE_APPEND_DATA, FILE_SHARE_READ, nullptr,

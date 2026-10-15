@@ -6,7 +6,7 @@
 // calls it only when the native path - WIC, Media Foundation, the shell
 // provider - could not make the preview. Without a pack nothing changes.
 //
-// Layout under %LOCALAPPDATA%\Pulse\packs:
+// Layout under <data root>\packs:
 //   packs.json                  user settings, written by the app
 //   <key>\installed.json        {"version":"7.1.1","dir":"7.1.1"}
 //   <key>\<dir>\ffmpeg.exe ...  the pack's files
@@ -15,6 +15,7 @@
 // separate executables and must not gain link dependencies.
 #pragma once
 
+#include "data_root.h"
 #include "json_utils.h"
 #include "utf8_file.h"
 #include <windows.h>
@@ -50,13 +51,13 @@ inline const wchar_t* PackMainTool(PackId id) {
     return L"";
 }
 
-// %LOCALAPPDATA%\Pulse\packs, empty when the variable is unavailable. Tests and
-// --test-instance runs redirect LOCALAPPDATA, which isolates packs as well.
+// <data root>\packs, empty when the root cannot be determined. Tests and
+// --test-instance runs redirect LOCALAPPDATA, which the resolver honors, so
+// packs stay isolated there as well.
 inline std::wstring PacksRoot() {
-    wchar_t root[32768];
-    const DWORD count = GetEnvironmentVariableW(L"LOCALAPPDATA", root, static_cast<DWORD>(std::size(root)));
-    if (!count || count >= std::size(root)) return {};
-    return std::wstring(root, count) + L"\\Pulse\\packs";
+    const std::wstring root = storage::DataRootPath();
+    if (root.empty()) return {};
+    return root + L"\\packs";
 }
 
 inline std::wstring PacksSettingsPath() {

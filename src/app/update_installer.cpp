@@ -2,6 +2,7 @@
 #include "update_download_cleanup.h"
 #include "update_transport.h"
 #include "update_stage.h"
+#include "../common/data_root.h"
 #include "../common/runtime_log.h"
 #include <bcrypt.h>
 #include <shellapi.h>
@@ -100,10 +101,9 @@ struct UpdateInstaller::State {
     }
 
     DWORD Download(const UpdateResult& update) {
-        wchar_t local[MAX_PATH]{};
-        if (FAILED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, SHGFP_TYPE_CURRENT, local)))
-            return ERROR_PATH_NOT_FOUND;
-        if (!CreateUpdateDownloadPackage(std::wstring(local) + L"\\PulseUpdateDownloads", package))
+        const std::wstring root = storage::DataRootPath();
+        if (root.empty()) return ERROR_PATH_NOT_FOUND;
+        if (!CreateUpdateDownloadPackage(root + L"\\UpdateDownloads", package))
             return ERROR_ACCESS_DENIED;
         directory = package.directory;
         file = package.file;

@@ -6,6 +6,7 @@
 //                -> Blend(COLOR, flood x tintOpacity)
 // Tint recipes match WinUI MicaController / DesktopAcrylicController.
 #include "window_material.h"
+#include "../common/data_root.h"
 #include "../common/windows_compat.h"
 
 #include <d2d1_1.h>
@@ -206,15 +207,11 @@ struct TargetGuard {
 
 FILE* MaterialLogFile() {
     static FILE* file = []() -> FILE* {
-        wchar_t dir[MAX_PATH]{};
-        wchar_t path[MAX_PATH]{};
-        if (!GetEnvironmentVariableW(L"LOCALAPPDATA", dir, MAX_PATH))
-            return nullptr;
-        swprintf_s(path, L"%s\\Pulse", dir);
-        CreateDirectoryW(path, nullptr);
-        swprintf_s(path, L"%s\\Pulse\\material.log", dir);
+        const std::wstring root = storage::DataRootPath();
+        if (root.empty()) return nullptr;
+        CreateDirectoryW(root.c_str(), nullptr);
         FILE* f = nullptr;
-        _wfopen_s(&f, path, L"a");
+        _wfopen_s(&f, (root + L"\\material.log").c_str(), L"a");
         return f;
     }();
     return file;

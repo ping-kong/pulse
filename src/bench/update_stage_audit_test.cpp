@@ -91,7 +91,7 @@ int wmain(int argc, wchar_t** argv) {
     CloseHandle(executing);
     SweepUpdateStages(root.wstring());
     Check(!std::filesystem::exists(directory), "later startup removes abandoned payload and its owned directory");
-    const auto foreign = root / L"Pulse" / L"UpdateStaging" / std::wstring(32, L'a');
+    const auto foreign = root / L"UpdateStaging" / std::wstring(32, L'a');
     std::filesystem::create_directories(foreign);
     { std::ofstream output(foreign / L"PulseSetup.exe"); output << "user data"; }
     SweepUpdateStages(root.wstring());
@@ -102,7 +102,7 @@ int wmain(int argc, wchar_t** argv) {
     Check(std::filesystem::exists(std::filesystem::path(directory) / L"notes.txt"), "unexpected user file prevents cleanup of whole stage");
     const auto target = root / L"outside";
     std::filesystem::create_directories(target);
-    const auto link = root / L"Pulse" / L"UpdateStaging" / std::wstring(32, L'b');
+    const auto link = root / L"UpdateStaging" / std::wstring(32, L'b');
     if (Junction(link, target)) {
         SweepUpdateStages(root.wstring());
         Check(std::filesystem::exists(target) && (GetFileAttributesW(link.c_str()) & FILE_ATTRIBUTE_REPARSE_POINT), "reparse stage is skipped without touching its target");

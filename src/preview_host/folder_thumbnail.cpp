@@ -1,4 +1,5 @@
 #include "folder_thumbnail.h"
+#include "../common/data_root.h"
 #include <objidl.h>
 #include <gdiplus.h>
 #include <shobjidl.h>
@@ -176,10 +177,9 @@ bool ReadPicture(IWICImagingFactory* factory, const std::wstring& path, UINT cap
     return Pixels(factory, frame.Get(), cap, out);
 }
 fs::path CacheDirectory() {
-    wchar_t root[32768];
-    const DWORD count = GetEnvironmentVariableW(L"LOCALAPPDATA", root, static_cast<DWORD>(std::size(root)));
-    if (!count || count >= std::size(root)) return {};
-    return fs::path(root) / L"Pulse" / L"FolderThumbnails";
+    const std::wstring root = storage::DataRootPath();
+    if (root.empty()) return {};
+    return fs::path(root) / L"FolderThumbnails";
 }
 struct CacheHeader { uint64_t magic = 0x32544d4854465055ull, signature = 0, created = 0; uint32_t size = 0, bytes = 0; };
 uint64_t Now() { FILETIME time{}; GetSystemTimeAsFileTime(&time); return (uint64_t(time.dwHighDateTime) << 32) | time.dwLowDateTime; }

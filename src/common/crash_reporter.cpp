@@ -1,4 +1,5 @@
 #include "crash_reporter.h"
+#include "data_root.h"
 #include "runtime_log.h"
 #include "pulse_version.h"
 
@@ -103,10 +104,15 @@ bool EnsureDirectory(const std::wstring& path) noexcept {
 }
 
 std::wstring DefaultDataRoot(bool machine_scope) {
-    wchar_t path[MAX_PATH]{};
-    const int csidl = machine_scope ? CSIDL_COMMON_APPDATA : CSIDL_LOCAL_APPDATA;
-    if (FAILED(SHGetFolderPathW(nullptr, csidl, nullptr, SHGFP_TYPE_CURRENT, path))) return {};
-    return JoinPath(path, L"Pulse");
+    // The service keeps its machine-wide root in ProgramData: the service exe
+    // lives in the install directory and services do not inherit user
+    // environment variables, so a redirect would not reach it anyway.
+    if (machine_scope) {
+        wchar_t path[MAX_PATH]{};
+        if (FAILED(SHGetFolderPathW(nullptr, CSIDL_COMMON_APPDATA, nullptr, SHGFP_TYPE_CURRENT, path))) return {};
+        return JoinPath(path, L"Pulse");
+    }
+    return storage::DataRootPath();
 }
 
 std::wstring SafeBuildId() {

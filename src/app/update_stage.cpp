@@ -1,5 +1,5 @@
 #include "update_stage.h"
-#include <shlobj.h>
+#include "../common/data_root.h"
 #include <bcrypt.h>
 #include <array>
 #include <cstring>
@@ -44,12 +44,9 @@ bool DeleteOwnedFile(const std::wstring& path) {
     return SetFileInformationByHandle(file.value, FileDispositionInfo, &disposition, sizeof(disposition)) != FALSE;
 }
 }
-bool CreateUpdateStage(const std::wstring& local, std::wstring& directory, std::wstring& file, HANDLE& lease) {
-    const auto pulse = local + L"\\Pulse";
-    if (!Directory(pulse)) return false;
-    Handle pulse_pin{Pin(pulse)};
-    if (pulse_pin.value == INVALID_HANDLE_VALUE) return false;
-    const auto root = pulse + L"\\UpdateStaging";
+bool CreateUpdateStage(const std::wstring& data_root, std::wstring& directory, std::wstring& file, HANDLE& lease) {
+    if (data_root.empty()) return false;
+    const auto root = data_root + L"\\UpdateStaging";
     if (!Directory(root)) return false;
     Handle root_pin{Pin(root)};
     if (root_pin.value == INVALID_HANDLE_VALUE) return false;
@@ -114,10 +111,9 @@ bool RemoveUpdateStage(const std::wstring& directory) {
     }
     return RemoveDirectoryW(directory.c_str()) != FALSE;
 }
-void SweepUpdateStages(const std::wstring& local) {
-    Handle pulse_pin{Pin(local + L"\\Pulse")};
-    if (pulse_pin.value == INVALID_HANDLE_VALUE) return;
-    const auto root = local + L"\\Pulse\\UpdateStaging";
+void SweepUpdateStages(const std::wstring& data_root) {
+    if (data_root.empty()) return;
+    const auto root = data_root + L"\\UpdateStaging";
     Handle root_pin{Pin(root)};
     if (root_pin.value == INVALID_HANDLE_VALUE) return;
     WIN32_FIND_DATAW entry{};
@@ -134,8 +130,12 @@ void CleanupAbandonedUpdateStagesAsync() noexcept {
     try {
         std::thread([] {
             try {
-                wchar_t local[MAX_PATH]{};
-                if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, SHGFP_TYPE_CURRENT, local))) SweepUpdateStages(local);
+                const std::wstring root = storage::DataRootPath();
+                if (!root.empty()) SweepUpdateStages(root);
+                // Releases before the data root moved staged installers under
+                // the legacy tree; sweep those leftovers once as well.
+                const std::wstring legacy = storage::LegacyDataRootPath();
+                if (!legacy.empty() && legacy != root) SweepUpdateStages(legacy);
             } catch (...) {
                 OutputDebugStringW(L"Pulse update-stage cleanup failed; retained stages will be retried on next startup.\n");
             }

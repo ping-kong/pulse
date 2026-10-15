@@ -1,19 +1,18 @@
 #pragma once
 #include "content_search_protocol.h"
 #include "../common/current_user_security.h"
+#include "../common/data_root.h"
 #include <algorithm>
 #include <cwctype>
 
 namespace pulse::index::config_storage {
 inline bool SameStoredPath(const std::wstring& a, const std::wstring& b) { return CompareStringOrdinal(a.c_str(), -1, b.c_str(), -1, TRUE) == CSTR_EQUAL; }
 inline std::wstring DatabasePath() {
-    wchar_t base[32768]{};
-    const DWORD n = GetEnvironmentVariableW(L"LOCALAPPDATA", base, ARRAYSIZE(base));
-    if (!n || n >= ARRAYSIZE(base)) return {};
-    std::wstring dir = std::wstring(base) + L"\\Pulse";
+    const std::wstring root = storage::DataRootPath();
+    if (root.empty()) return {};
     CurrentUserSecurityAttributes security;
-    CreateDirectoryW(dir.c_str(), security ? security.get() : nullptr);
-    dir += L"\\ContentIndex";
+    CreateDirectoryW(root.c_str(), security ? security.get() : nullptr);
+    std::wstring dir = root + L"\\ContentIndex";
     CreateDirectoryW(dir.c_str(), security ? security.get() : nullptr);
     return dir + L"\\content-v1.sqlite";
 }

@@ -2,6 +2,7 @@
 #include "content_scope.h"
 #include "document_reader.h"
 #include "index_feed.h"
+#include "../common/data_root.h"
 #include "../fs/fs_watch.h"
 #include <algorithm>
 #include <condition_variable>
@@ -45,9 +46,9 @@ void LogSubscriptionFailure(const Changes& state, uint64_t generation, size_t pe
         std::filesystem::path root;
         if (count && count < ARRAYSIZE(directory)) root = directory;
         else {
-            count = GetEnvironmentVariableW(L"LOCALAPPDATA", directory, ARRAYSIZE(directory));
-            if (!count || count >= ARRAYSIZE(directory)) return;
-            root = std::filesystem::path(directory) / L"Pulse" / L"logs";
+            const std::wstring data_root = storage::DataRootPath();
+            if (data_root.empty()) return;
+            root = std::filesystem::path(data_root) / L"logs";
         }
         std::error_code error;
         std::filesystem::create_directories(root, error);

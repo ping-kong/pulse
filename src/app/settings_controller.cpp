@@ -7,6 +7,7 @@
 #include "../index/index_client.h"
 #include "../index/index_config.h"
 #include "../index/network_agent_client.h"
+#include "../common/data_root.h"
 #include "../common/preview_packs.h"
 #include "pack_catalog.h"
 #include "../ui/quick_preview_command.h"
@@ -60,17 +61,16 @@ std::wstring IntegrationFailureText(const ShellIntegrationFailure& failure) {
 }
 
 std::wstring IntegrationLogPath() {
-    wchar_t base[MAX_PATH]{};
-    const DWORD length = GetEnvironmentVariableW(L"LOCALAPPDATA", base, MAX_PATH);
-    if (!length || length >= MAX_PATH) return {};
-    std::wstring dir = std::wstring(base) + L"\\Pulse";
+    const std::wstring root = storage::DataRootPath();
+    if (root.empty()) return {};
+    std::wstring dir = root;
     CreateDirectoryW(dir.c_str(), nullptr);
     dir += L"\\logs";
     CreateDirectoryW(dir.c_str(), nullptr);
     return dir + L"\\integration.log";
 }
 
-// One UTF-8 line per failed item in %LOCALAPPDATA%\Pulse\logs\integration.log.
+// One UTF-8 line per failed item in <data root>\logs\integration.log.
 void LogIntegrationFailure(const wchar_t* item, bool on, const ShellIntegrationFailure& failure) {
     const std::wstring path = IntegrationLogPath();
     if (path.empty()) return;

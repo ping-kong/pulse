@@ -1,5 +1,6 @@
 #pragma once
 #include "app_navigation.h"
+#include "../common/data_root.h"
 #include <condition_variable>
 #include <cstdio>
 #include <deque>
@@ -56,8 +57,8 @@ private:
         try {
             auto directory = Environment(L"PULSE_CONTENT_TIMING_DIR");
             if (directory.empty()) {
-                directory = Environment(L"LOCALAPPDATA");
-                if (!directory.empty()) directory += L"\\Pulse\\logs";
+                const std::wstring root = storage::DataRootPath();
+                if (!root.empty()) directory = root + L"\\logs";
             }
             if (!directory.empty()) {
                 std::error_code error;

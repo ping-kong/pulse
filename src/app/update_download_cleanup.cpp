@@ -1,5 +1,6 @@
 #include "update_download_cleanup.h"
 #include "../common/current_user_security.h"
+#include "../common/data_root.h"
 #include <bcrypt.h>
 #include <wincrypt.h>
 #include <shlobj.h>
@@ -227,6 +228,10 @@ void StartUpdateDownloadCleanup() {
     try {
         std::thread([] {
             try {
+                const std::wstring root = storage::DataRootPath();
+                if (!root.empty()) CollectUpdateDownloads(root + L"\\UpdateDownloads");
+                // Releases before the data root moved wrote downloads next to
+                // the legacy tree; sweep those leftovers once as well.
                 wchar_t local[MAX_PATH]{};
                 if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, SHGFP_TYPE_CURRENT, local)))
                     CollectUpdateDownloads(std::wstring(local) + L"\\PulseUpdateDownloads");

@@ -16,7 +16,7 @@
 
 ## 存储与开销
 
-- 用户进程：`%LOCALAPPDATA%\Pulse\Diagnostics\Runtime`。
+- 用户进程：数据目录下的 `Diagnostics\Runtime`。数据目录默认是 `%LOCALAPPDATA%\Pulse`，便携版为程序所在目录，可用 `pulse.ini` 或 `PULSE_DATA_DIR` 改到其他位置，见[数据目录](data-root.md)。
 - 索引服务：`%PROGRAMDATA%\Pulse\Diagnostics\Runtime`。
 - 文件名为组件和进程号，如 `app-1234.jsonl`、`index-service-5678.jsonl`，轮转文件后缀 `.1`。
 - 每文件默认 2 MiB，每进程保留当前和上一份。启动和每分钟清理到最近 24 个历史文件；清理与新建并发时可暂时超过此数量。

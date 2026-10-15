@@ -1,6 +1,7 @@
 #include "index_config.h"
 #include "index_directory_security.h"
 #include "../common/config_json.h"
+#include "../common/data_root.h"
 #include "../common/json_utils.h"
 #include "../common/utf8_file.h"
 #include <algorithm>
@@ -286,9 +287,8 @@ bool ProtectIndexDirectory(const std::wstring& path) {
 }
 
 std::wstring UserIndexRoot() {
-    std::wstring root = KnownFolder(CSIDL_LOCAL_APPDATA);
-    if (root.empty()) return {};
-    const std::wstring pulse = root + L"\\Pulse";
+    const std::wstring pulse = storage::DataRootPath();
+    if (pulse.empty()) return {};
     if (!EnsureDirectory(pulse)) return {};
     return pulse;
 }
