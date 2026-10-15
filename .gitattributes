@@ -1,0 +1,68 @@
+# 统一换行符策略：仓库内一律 LF，检出到 Windows 工作区转 CRLF。
+# 消除 Windows/macOS/Linux 之间 CRLF<->LF 造成的伪 diff。
+
+# 默认：文本文件入库转 LF，检出转 CRLF（Windows 习惯）
+* text=auto eol=crlf
+
+# --- 源码与文档：明确 LF 入库 ---
+*.c      text eol=lf
+*.cc     text eol=lf
+*.cpp    text eol=lf
+*.cxx    text eol=lf
+*.h      text eol=lf
+*.hpp    text eol=lf
+*.hxx    text eol=lf
+*.inl    text eol=lf
+*.ipp    text eol=lf
+
+*.md     text eol=lf
+*.txt    text eol=lf
+*.json   text eol=lf
+*.yml    text eol=lf
+*.yaml   text eol=lf
+*.xml    text eol=lf
+*.cmake  text eol=lf
+*.ps1    text eol=lf
+*.sh     text eol=lf
+
+# --- Windows 专有脚本：保持 CRLF（cmd/PowerShell 逐行解析，LF 会出问题）---
+*.bat    text eol=crlf
+*.cmd    text eol=crlf
+*.psm1   text eol=crlf
+
+# --- 必须按二进制处理，绝不转换 ---
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.ico    binary
+*.icns   binary
+*.webp   binary
+*.svgz   binary
+*.pdf    binary
+*.zip    binary
+*.7z     binary
+*.gz     binary
+*.exe    binary
+*.dll    binary
+*.lib    binary
+*.a      binary
+*.o      binary
+*.obj    binary
+*.pdb    binary
+*.ttf    binary
+*.otf    binary
+*.woff   binary
+*.woff2  binary
+*.mp3    binary
+*.wav    binary
+*.mp4    binary
+*.webm   binary
+
+# --- 构建产物 ---
+build/           text eol=lf
+*.sln            text eol=crlf
+*.vcxproj        text eol=crlf
+*.vcxproj.filters text eol=crlf
+*.props          text eol=crlf
+*.targets        text eol=crlf
